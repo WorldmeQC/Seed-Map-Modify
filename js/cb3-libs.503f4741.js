@@ -1208,7 +1208,7 @@
       register({
         id: 187,
         key: "sulfur_caves",
-        name: "Sulfur Caves",
+        name: "硫黄洞穴",
         category: "none",
         temperature: .8,
         precipitation: "none",
@@ -1220,7 +1220,7 @@
       register({
         id: 188,
         key: "dappled_forest",
-        name: "Dappled Forest",
+        name: "斑驳森林",
         category: "forest",
         temperature: .6,
         precipitation: "none",
