@@ -1,10 +1,5 @@
 "use strict";
-
-/* Prototype extensions. */
-
-Math.frac = function (a) {
-  return a - Math.trunc(a);
-};
+Math.frac = function (a) { return a - Math.trunc(a) };
 String.prototype.hashCode = function () {
   var a = 0;
   if (0 == this.length)
@@ -16,10 +11,6 @@ String.prototype.hashCode = function () {
   }
   return a
 };
-Number.prototype.clamp = function (a, b) {
-  return Math.min(Math.max(this, a), b)
-};
-
 function __CB__debounce(a, b) {
   var c;
   return function () {
@@ -317,6 +308,60 @@ var ChunkApp = {
     minChunkWidth: 1
   },
   Platform: {
+    java_26_2_lb: {
+      label: "Java 26.2 (LB)",
+      cb3World: {
+        edition: CB3Libs.Edition.Java,
+        javaVersion: CB3Libs.JavaVersion.V26_2,
+        config: {
+          largeBiomes: !0
+        }
+      }
+    },
+    java_26_2: {
+      label: "Java 26.2",
+      cb3World: {
+        edition: CB3Libs.Edition.Java,
+        javaVersion: CB3Libs.JavaVersion.V26_2,
+        config: {}
+      }
+    },
+    java_26_1_lb: {
+      label: "Java 26.1 (LB)",
+      cb3World: {
+        edition: CB3Libs.Edition.Java,
+        javaVersion: CB3Libs.JavaVersion.V1_21_9,
+        config: {
+          largeBiomes: !0
+        }
+      }
+    },
+    java_26_1: {
+      label: "Java 26.1",
+      cb3World: {
+        edition: CB3Libs.Edition.Java,
+        javaVersion: CB3Libs.JavaVersion.V1_21_9,
+        config: {}
+      }
+    },
+    java_1_21_9_lb: {
+      label: "Java 1.21.9 (LB)",
+      cb3World: {
+        edition: CB3Libs.Edition.Java,
+        javaVersion: CB3Libs.JavaVersion.V1_21_9,
+        config: {
+          largeBiomes: !0
+        }
+      }
+    },
+    java_1_21_9: {
+      label: "Java 1.21.9",
+      cb3World: {
+        edition: CB3Libs.Edition.Java,
+        javaVersion: CB3Libs.JavaVersion.V1_21_9,
+        config: {}
+      }
+    },
     java_1_21_6_lb: {
       label: "Java 1.21.6 (LB)",
       cb3World: {
@@ -677,8 +722,40 @@ var ChunkApp = {
         config: {}
       }
     },
+    bedrock_26_30: {
+      label: "Bedrock 26.30",
+      cb3World: {
+        edition: CB3Libs.Edition.Bedrock,
+        bedrockVersion: CB3Libs.BedrockVersion.V26_30,
+        config: {}
+      }
+    },
+    bedrock_26_0: {
+      label: "Bedrock 26.0",
+      cb3World: {
+        edition: CB3Libs.Edition.Bedrock,
+        bedrockVersion: CB3Libs.BedrockVersion.V1_21_120,
+        config: {}
+      }
+    },
+    bedrock_1_21_120: {
+      label: "Bedrock 1.21.120",
+      cb3World: {
+        edition: CB3Libs.Edition.Bedrock,
+        bedrockVersion: CB3Libs.BedrockVersion.V1_21_120,
+        config: {}
+      }
+    },
+    bedrock_1_21_110: {
+      label: "Bedrock 1.21.111",
+      cb3World: {
+        edition: CB3Libs.Edition.Bedrock,
+        bedrockVersion: CB3Libs.BedrockVersion.V1_21_110,
+        config: {}
+      }
+    },
     bedrock_1_21_90: {
-      label: "Bedrock 1.21.90",
+      label: "Bedrock 1.21.90 - 1.21.101",
       cb3World: {
         edition: CB3Libs.Edition.Bedrock,
         bedrockVersion: CB3Libs.BedrockVersion.V1_21_90,
@@ -788,7 +865,7 @@ var ChunkApp = {
       label: "Java",
       cb3World: {
         edition: CB3Libs.Edition.Java,
-        javaVersion: CB3Libs.JavaVersion.V1_7,
+        javaVersion: CB3Libs.JavaVersion.V26_2,
         config: {}
       }
     },
@@ -797,12 +874,40 @@ var ChunkApp = {
       use32BitSeed: !1,
       cb3World: {
         edition: CB3Libs.Edition.Bedrock,
-        bedrockVersion: CB3Libs.BedrockVersion.V1_19,
+        bedrockVersion: CB3Libs.BedrockVersion.V26_30,
         config: {}
       }
     }
   }
 }, appHelpers = {
+  parseStateParams: function () {
+    function a(a, b) {
+      if (!b)
+        return;
+      "#" === b.charAt(0) || "?" === b.charAt(0) ? b = b.substr(1) : 0;
+      if (!b)
+        return;
+      if (-1 === b.indexOf("=")) {
+        a.seed = decodeURIComponent(b.replace(/\+/g, " "));
+        return;
+      }
+      b.split("&").forEach(function (b) {
+        if (b) {
+          var c = b.split("=")
+            , d = decodeURIComponent((c.shift() || "").replace(/\+/g, " "))
+            , e = decodeURIComponent(c.join("=").replace(/\+/g, " "));
+          d && (a[d] = e)
+        }
+      })
+    }
+    var b = {};
+    return a(b, document.location.search),
+      a(b, document.location.hash),
+      b
+  },
+  hasStructuredStateHash: function () {
+    return "string" == typeof document.location.hash && -1 !== document.location.hash.indexOf("=")
+  },
   toLong: function (a) {
     if (!a.match(/^[-+]?\d+$/))
       return void 0;
@@ -872,9 +977,9 @@ var ChunkApp = {
         b()
     },
     init: function (b, e) {
-      var f = function () { var a = document.createElement("canvas"); return !!a.getContext && !!a.getContext("2d") }()
-        , g = f && typeof document.createElement("canvas").getContext("2d").fillText === "function"
-        , h = !!window.Worker
+      var f = !!Modernizr.canvas
+        , g = !!Modernizr.canvastext
+        , h = !!Modernizr.webworkers
         , i = !!window.Promise
         , j = !!a();
       !e && f && i && g && h && j ? c(b) : (d(),
@@ -975,9 +1080,8 @@ $.fn.seedControls = function (a) {
     , f = e.getRandomLong()
     , g = {
       refreshSeedAndPlatform: function () {
-        var a, b = document.location.hash;
-        "undefined" != typeof b && b.length > 1 && (a = b.substr(1));
-        var c = null
+        var a = appHelpers.parseStateParams()
+          , c = null
           , d = null;
         try {
           c = window.localStorage.getItem("cb_finder_lastseed")
@@ -985,8 +1089,8 @@ $.fn.seedControls = function (a) {
         try {
           d = window.localStorage.getItem("cb_finder_lastplatform")
         } catch (f) { }
-        var h = d
-          , i = a || c;
+        var h = a.platform || d
+          , i = a.seed || c;
         return h && e.maybeSetPlatform(h),
           i ? (g.setSeed(i),
             !0) : !1
@@ -1037,8 +1141,9 @@ $.fn.seedControls = function (a) {
         e.parseFiles(a.target.files)
       },
       hashChanged: function () {
-        var a = window.location.hash;
-        g.setSeed(a.substr(1)),
+        var a = appHelpers.parseStateParams();
+        a.platform && e.maybeSetPlatform(a.platform),
+          g.setSeed(a.seed || ""),
           setTimeout(function () {
             d.seed.change(),
               h.seedSubmit()
@@ -1067,8 +1172,8 @@ $.fn.seedControls = function (a) {
           , d = e.cleanSeed(c);
         g.setSeed(c, !0);
         var f = CB3Libs.Long.fromString(d);
-        !b && $.trim(c).length > 0 && window.location.hash !== "#" + c && window.history.replaceState(null, null, "#" + c),
-          b || 0 !== $.trim(c).length || "" === window.location.hash || "#" === window.location.hash || window.history.replaceState(null, null, window.location.pathname);
+        !b && !appHelpers.hasStructuredStateHash() && $.trim(c).length > 0 && window.location.hash !== "#" + c && window.history.replaceState(null, null, "#" + c),
+          b || appHelpers.hasStructuredStateHash() || 0 !== $.trim(c).length || "" === window.location.hash || "#" === window.location.hash || window.history.replaceState(null, null, window.location.pathname);
         try {
           window.localStorage.setItem("cb_finder_lastseed", c)
         } catch (h) { }
@@ -1095,7 +1200,7 @@ $.fn.seedControls = function (a) {
           d.errors.find("#chunkapp-error-" + b).detach()
       }
     }
-    , k = function () { var a = document.createElement("div"); return "draggable" in a || "ondragstart" in a && "ondrop" in a }()
+    , k = Modernizr.draganddrop
     , l = !!window.FileReader;
   if (d.randomButton.click(h.randomButton),
     $(window).hashchange(h.hashChanged),
@@ -1215,6 +1320,9 @@ $.fn.seedControls = function (a) {
     c.touchEnabled.change(e.touchChanged),
     this.find("#map-touch").removeClass("hidden")
   );
+  var g = appHelpers.parseStateParams();
+  "undefined" != typeof g.x && c.gotoX.val(g.x);
+  "undefined" != typeof g.z && c.gotoZ.val(g.z);
   setTimeout(function () {
     c.gotoButton.trigger("click", !0)
   }, 0)
@@ -2785,7 +2893,7 @@ $.fn.dimensionSelection = function (a) {
         }
       };
     c.select.change(f.onChange),
-      a.initialDimension && c.select.val(a.initialDimension),
+      appHelpers.parseStateParams().dimension ? c.select.val(appHelpers.parseStateParams().dimension) : a.initialDimension && c.select.val(a.initialDimension),
       a.on("platformchange", function (a, b) {
         f.onPlatformChange(b)
       }),
@@ -2903,8 +3011,8 @@ $.fn.seedMapLayers = function (a) {
       zoomWarning: b.find(".seedmap-layers-warning"),
       scrollbarWrapper: b.find("[data-simplebar]")
     }
-      , d = a.initialDimension
-      , e = []
+      , d = appHelpers.parseStateParams().dimension || a.initialDimension
+      , e = Object.keys(CB3PoiConfig)
       , f = a.initialHiddenPois || []
       , g = {
         applyPois: function (a) {
@@ -2917,7 +3025,7 @@ $.fn.seedMapLayers = function (a) {
         applyFilters: function () {
           c.pois.each(function (a, b) {
             var c = b.dataset.poi
-              , f = "checkAll" === c || "unCheckAll" === c || "biomes" === c || CB3PoiConfig[c].dimension === d && -1 !== e.indexOf(c);
+              , f = "checkAll" === c || "unCheckAll" === c || "biomes" === c || CB3PoiConfig[c] && CB3PoiConfig[c].dimension === d && -1 !== e.indexOf(c);
             f ? b.classList.remove("hidden") : b.classList.add("hidden")
           });
           try {
@@ -2943,7 +3051,7 @@ $.fn.seedMapLayers = function (a) {
           return c.pois.each(function (b, c) {
             var d = c.dataset.poi
               , e = "true" === c.getAttribute("aria-checked");
-            e && a.push(d)
+            e && ("biomes" === d || CB3PoiConfig[d] && !c.classList.contains("hidden")) && a.push(d)
           }),
           {
             pois: a
@@ -2981,7 +3089,9 @@ $.fn.seedMapLayers = function (a) {
             g.refreshZoomWarning())
         },
         supportedPoisChanged: function (a) {
-          e = a,
+          e = a && a.length ? a.filter(function (a) {
+            return "biomes" === a || CB3PoiConfig[a]
+          }) : Object.keys(CB3PoiConfig),
             g.applyFilters(),
             g.refreshZoomWarning()
         },
@@ -4053,7 +4163,6 @@ var CB3TooltipManager = function () {
     , g = "all" === b.pois ? Object.keys(CB3PoiConfig).filter(function (a) {
       return !b.initiallyHiddenPois || -1 === b.initiallyHiddenPois.indexOf(a)
     }).concat(["biomes"]) : b.pois || [];
-
   Object.assign(c, {
     drawAll: !0,
     async: !0,
@@ -4062,7 +4171,7 @@ var CB3TooltipManager = function () {
     deferredRender: !0,
     distantViewDeferredRender: !0,
     initialDimension: b.dimension || (b.dimensions ? b.dimensions[0] : null),
-    initialBiomeHeight: "surface",
+    initialBiomeHeight: "depth0",
     initialPois: g,
     getSupportedDimensions: function (a) {
       return b.dimensions ? {
@@ -4073,11 +4182,11 @@ var CB3TooltipManager = function () {
     }
   }, f[b.chunkWidths]);
 
-  // Get avaliable worker count.
+  // Get avaliable worker count
   var h = null != navigator.hardwareConcurrency && navigator.hardwareConcurrency > 1 ? navigator.hardwareConcurrency - 1 : 1;
   h = Math.min(h, 6);
 
-  // Create worker.
+  // Create worker
   for (var workers = [], j = 0; h > j; j++)
     workers[j] = new Worker(window.URL.createObjectURL(inlineWorker_k9bk8));
   CB3SharedTaskManagerMain.init(workers);
@@ -4088,7 +4197,7 @@ var CB3TooltipManager = function () {
     }, !1)
   });
 
-  // Worker for poi list when platform change.
+  // Worker for poi list when platform change
   var l = new Worker(window.URL.createObjectURL(inlineWorker_k9bk8));
   l.addEventListener("message", function (a) {
     "getSupportedPois" === a.data.type && c.triggerHandler("supportedpoischanged", [a.data.supportedPois])
@@ -4100,8 +4209,7 @@ var CB3TooltipManager = function () {
       })
     }),
     c.initialHideGridLines = b.hideGridLines;
-
-  var delayDrawFn = null;
+  var m = null;
 
   return SeedMapTiles(c, {
     defaultPlatform: ChunkApp.Platform.java,
@@ -4122,8 +4230,8 @@ var CB3TooltipManager = function () {
     /**
      * @param {*} a 
      * @param {*} c 
-     * @param {*} d - Tile data.
-     * @param {*} e - Params.
+     * @param {*} d - Tile data
+     * @param {*} e - Params
      * @returns 
      */
     getHoverText: function (a, c, d, e) {
@@ -4153,6 +4261,8 @@ var CB3TooltipManager = function () {
           c = Math.floor(c);
         for (var n = Object.keys(d.hits.poiResults).reverse(), o = 0; o < n.length; o++)
           for (var p = n[o], q = CB3PoiConfig[p], r = d.hits.poiResults[p], s = 0; s < r.length; s++) {
+            if (!q)
+              continue;
             var t = r[s];
             if (t[0] === a && t[1] === c)
               return q.getHoverText ? q.getHoverText(t, e.platform.cb3World) : null
@@ -4185,9 +4295,9 @@ var CB3TooltipManager = function () {
 
       var g = Object.assign({}, a, {
         pois: a.pois.filter(function (b) {
-          return CB3PoiConfig[b].dimension === a.dimension
+          return CB3PoiConfig[b] && CB3PoiConfig[b].dimension === a.dimension
         }).filter(function (c) {
-          return !b.filterPoisByZoomLevel || CB3PoiConfig[c].maxTileSize >= a.tileSize
+          return !b.filterPoisByZoomLevel || CB3PoiConfig[c] && CB3PoiConfig[c].maxTileSize >= a.tileSize
         })
       });
       if (a.dimension === CB3Libs.Dimension.Overworld) {
@@ -4201,36 +4311,28 @@ var CB3TooltipManager = function () {
       })
     },
     /**
-     * Paint tile to map canvas.
-     * @param {*} CTX - Map canvas context.
-     * @param {"biomes"|"slimeChunks"|"pois"} type - Operation type.
-     * @param {*} tileCoord - Tile coord.
-     * @param {*} tileData - Tile data.
-     * @param {Function} drawSimple - Draw poi with no icon.
-     * @param {number} chunkWidth - Chunk width in pixels.
-     * @param {Function} cast - Calculate screen pos from chunk pos.
-     * @param {Array} k - Display area pos in canvas.
-     * @param {object} l - Params.
+     * Paint tile to map canvas
+     * @param {*} CTX - Map canvas context
+     * @param {"biomes"|"slimeChunks"|"pois"} c - Operation type
+     * @param {*} f - Tile coord
+     * @param {*} tileData - Tile data
+     * @param {Function} h - Draw poi with no icon
+     * @param {Number} i - Chunk width
+     * @param {Function} cast - Calculate screen pos from chunk pos
+     * @param {Array} k - Display area pos in canvas
+     * @param {*} l - Params
      */
-    paintTile: function (
-      CTX, type, tileCoord, tileData, drawSimple, chunkWidth, cast, k, l
-    ) {
+    paintTile: function (CTX, c, f, tileData, h, i, cast, k, l) {
       function getBiomeInChunk(px, py) {
-        function fx(a) {
-          return tileData.biomeScale >= 1 ? a : Math.floor(a / tileData.biomeScale) * tileData.biomeScale
-        }
-        var icpx = Math.floor((fx(px / 16) - tileCoord.x) / tileData.biomeScale)
-          , icpy = Math.floor((fx(py / 16) - tileCoord.z) / tileData.biomeScale)
-          , biomeArr = new Uint8Array(tileData.biomes);
-        return biomeArr[icpy * tileCoord.xL / tileData.biomeScale + icpx]
+        function fx(a) { return tileData.biomeScale >= 1 ? a : Math.floor(a / tileData.biomeScale) * tileData.biomeScale }
+        var icpx = Math.floor((fx(px / 16) - f.x) / tileData.biomeScale),
+          icpy = Math.floor((fx(py / 16) - f.z) / tileData.biomeScale),
+          b = new Uint8Array(tileData.biomes);
+        return b[icpy * f.xL / tileData.biomeScale + icpx]
       }
-
-      // Add customize pois to the canvas.
-      tileData.poiResults[CB3Libs.POI.HTCustomize] = HTPoiConfig.getPoisInRegion(tileCoord);
-
-      if ("biomes" !== type) {
-        if ("slimeChunks" === type && b.renderImg && tileData.poiResults[CB3Libs.POI.SlimeChunk]) {
-          // Render slime chunks.
+      tileData.poiResults[CB3Libs.POI.HTCustomize] = HTPoiConfig.getPoisInRegion(f);
+      if ("biomes" !== c) {
+        if ("slimeChunks" === c && b.renderImg && tileData.poiResults[CB3Libs.POI.SlimeChunk]) {
           var n = tileData.poiResults[CB3Libs.POI.SlimeChunk]
             , o = CB3PoiConfig[CB3Libs.POI.SlimeChunk]
             , p = CTX.lineWidth;
@@ -4245,10 +4347,9 @@ var CB3TooltipManager = function () {
             CTX.strokeRect(c[0] + 1, c[1] + 1, d[0] - c[0] - 3, d[1] - c[1] - 3)
           });
           CTX.lineWidth = p
-        } if ("pois" === type) {
-          // Render POIs.
+        } if ("pois" === c) {
+          // Sort pois in order of CB3PoiConfig
           var q = Object.keys(tileData.poiResults).sort(function (a, b) {
-            // Sort pois in the order of CB3PoiConfig.
             return e.indexOf(a) - e.indexOf(b)
           });
           window.__analytics_lastPois = q;
@@ -4262,8 +4363,8 @@ var CB3TooltipManager = function () {
                 , o = f.height * (m ? d : 1)
                 , p = Math.floor(h[0] - n / 2)
                 , q = Math.floor(h[1] - o / 2)
-                , r = CB3TooltipManager.isSelectMode()
-                  ? !HTSelectManager.isPoiSelected(poiName, i.getHash(e))
+                , r = CB3TooltipManager.isSelectMode() ?
+                  !HTSelectManager.isPoiSelected(poiName, i.getHash(e))
                   : CB3MapUserDataManager.isPoiMarked(l.platform, l.seed, poiName, i.getHash(e));
               CTX.globalAlpha = r ? CB3TooltipManager.isSelectMode() ? .60 : .45 : 1;
               if (tileData.biomeFilter && (tileData.biomeFilter.indexOf(getBiomeInChunk(pos[0], pos[2])) != -1)) {
@@ -4283,34 +4384,28 @@ var CB3TooltipManager = function () {
                   var d = i.splitPois ? i.splitPois(a) : [a];
                   d.forEach(function (a, b) {
                     var d = [poiName, a[0], a[1], b].join(";");
-                    CB3TooltipManager.isSelected(d)
-                      ? delayDrawFn = function () { doDraw(d, a, b) }
+                    CB3TooltipManager.isSelected(d) ?
+                      m = function () { doDraw(d, a, b) }
                       : doDraw(d, a, b)
                   })
                 } else
-                  drawSimple(a[0], a[1], "function" == typeof i.fillColor ? i.fillColor(a[2]) : i.fillColor)
+                  h(a[0], a[1], "function" == typeof i.fillColor ? i.fillColor(a[2]) : i.fillColor)
               })
             }
           })
         }
       } else if (window.__analytics_lastBiomes = !!tileData.biomeCanvas,
         tileData.biomeCanvas) {
-        var r = cast(tileCoord.x, tileCoord.z)
-          , s = cast(tileCoord.x + tileCoord.xL, tileCoord.z + tileCoord.zL);
-        CTX.drawImage(
-          tileData.biomeCanvas,
-          Math.floor(r[0]),
-          Math.floor(r[1]),
-          Math.floor(s[0] - r[0]),
-          Math.floor(s[1] - r[1])
-        )
+        var r = cast(f.x, f.z)
+          , s = cast(f.x + f.xL, f.z + f.zL);
+        CTX.drawImage(tileData.biomeCanvas, Math.floor(r[0]), Math.floor(r[1]), Math.floor(s[0] - r[0]), Math.floor(s[1] - r[1]))
       }
     },
     /**
-     * Preprocess binary biome results and height values into image data.
-     * @param {*} a - Results.
-     * @param {*} b - Tile data.
-     * @returns Results with biome canvas.
+     * Process biome results to canvas
+     * @param {*} a - Results
+     * @param {*} b - Tile data
+     * @returns Results with biome canvas
      */
     processTile: function (a, b) {
       function c(a, b) {
@@ -4324,9 +4419,8 @@ var CB3TooltipManager = function () {
       d.width = b.xL / a.biomeScale;
       d.height = b.zL / a.biomeScale;
       var e, f = new Uint8Array(a.biomes), g = a.heights && new Int32Array(a.heights);
+      /* Draw height */
       if (g) {
-        // Draw heights.
-        // Pre-calculated height data.
         e = [];
         for (var h = .025, i = 1 / Math.sqrt(.5) * Math.sqrt(a.biomeScale), j = 45, k = 315, l = 1 * i, m = Math.PI * j / 180, n = Math.PI * k / 180, o = Math.cos(m), p = Math.sin(m), q = 0; q < d.height; q++)
           for (var r = Math.max(q - 1, 0), s = Math.min(q + 1, d.height - 1), t = 0; t < d.width; t++) {
@@ -4346,37 +4440,28 @@ var CB3TooltipManager = function () {
             e[q * d.width + t] = F
           }
       }
-
-      var G = d.getContext("2d")
-        , H = G.createImageData(d.width, d.height)
-        , I = H.data
-        , J = CB3Libs.biomeList;
-      for (var K = 0; K < d.width * d.height; K++) {
+      for (var G = d.getContext("2d"), H = G.createImageData(d.width, d.height), I = H.data, J = CB3Libs.biomeList, K = 0; K < d.width * d.height; K++) {
         var L = f[K];
         if (255 !== L) {
           var M = J[L].rgb;
-          if (e) {
-            I[4 * K + 0] = c(e[K], M[0]);
-            I[4 * K + 1] = c(e[K], M[1]);
-            I[4 * K + 2] = c(e[K], M[2])
-          } else {
-            I[4 * K + 0] = M[0];
-            I[4 * K + 1] = M[1];
-            I[4 * K + 2] = M[2]
-          }
-          I[4 * K + 3] = 255;
-          if (a.biomeFilter) {
-            if (a.biomeFilter.indexOf(L) == -1)
-              // Change the transparent to 22 if not the specified biome.
-              I[4 * K + 3] = 48;
+          if (e ? (I[4 * K + 0] = c(e[K], M[0]),
+            I[4 * K + 1] = c(e[K], M[1]),
+            I[4 * K + 2] = c(e[K], M[2])) : (I[4 * K + 0] = M[0],
+              I[4 * K + 1] = M[1],
+              I[4 * K + 2] = M[2]),
+            I[4 * K + 3] = 255,
+            a.biomeFilter)
+            if (-1 === a.biomeFilter.indexOf(L))
+              /* Not the specified biome */
+              /* Change the transparent to 22 */
+              I[4 * K + 3] = 22;
             else {
-              // Change the transparent by 0.9.
-              var N = .9;
+              var N = .9; /* Change the transparent by 0.9 */
               I[4 * K + 0] = Math.round(I[4 * K + 0] * N);
               I[4 * K + 1] = Math.round(I[4 * K + 1] * N);
               I[4 * K + 2] = Math.round(I[4 * K + 2] * N)
             }
-          }
+          a.biomeFilter && -1 === a.biomeFilter.indexOf(L) && (I[4 * K + 3] = 32)
         }
       }
       G.putImageData(H, 0, 0);
@@ -4390,8 +4475,8 @@ var CB3TooltipManager = function () {
     },
     beforeMapRepaint: CB3TooltipManager.beforeMapRepaint,
     onMapRepainted: function (a) {
-      delayDrawFn && (delayDrawFn(),
-        delayDrawFn = null),
+      m && (m(),
+        m = null),
         CB3TooltipManager.onMapRepainted(a)
     }
   })
@@ -4410,11 +4495,11 @@ $(document).ready(function () {
   }
   function poiImgCanvas(a, b) {
     var c = document.createElement("canvas");
-    c.width = b.width;
-    c.height = b.height;
+    c.width = b.width,
+      c.height = b.height;
     var d = c.getContext("2d");
-    d.drawImage(a, b.x, b.y, b.width, b.height, 0, 0, b.width, b.height);
-    return c
+    return d.drawImage(a, b.x, b.y, b.width, b.height, 0, 0, b.width, b.height),
+      c
   }
   function initPoiImg(a) {
     createImg(window.__seedMapPoisSpriteImage, function (err, d) {
@@ -4430,16 +4515,15 @@ $(document).ready(function () {
               return a(new Error("sprite not found: " + f)),
                 void (e = !0);
             CB3PoiConfig[b].img = poiImgCanvas(d, g)
-          } else {
-            CB3PoiConfig[b].img = {};
-            Object.keys(f).forEach(function (g) {
-              var h = window.__seedMapPoisSprite[f[g]];
-              return h ? void (CB3PoiConfig[b].img[g] = poiImgCanvas(d, h)) : (a(new Error("sprite not found: " + f[g])),
-                void (e = !0))
-            })
-          }
-      });
-      e || a()
+          } else
+            CB3PoiConfig[b].img = {},
+              Object.keys(f).forEach(function (g) {
+                var h = window.__seedMapPoisSprite[f[g]];
+                return h ? void (CB3PoiConfig[b].img[g] = poiImgCanvas(d, h)) : (a(new Error("sprite not found: " + f[g])),
+                  void (e = !0))
+              })
+      }),
+        e || a()
     })
   }
   !function () {

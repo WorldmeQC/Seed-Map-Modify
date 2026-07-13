@@ -1,12 +1,4 @@
-# Folder.
-.vscode/
-disabled/
-
-# Wildcard files.
+.vscode*
+.gitignore
 js/worker.*.js
-test*
-*.bak
-*.a
-*.o
-*.dll
-*.exe
+disabled*

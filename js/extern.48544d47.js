@@ -29,8 +29,7 @@ $.fn.markMenu = function (a) {
       addZ: $("body").find("#mark-add-z"),
       addName: $("body").find("#mark-add-name"),
       addButton: $("body").find("#mark-add-button")
-    }
-    , params = {};
+    }, params = {};
 
   function encodeText(a) {
     return a += "",
@@ -172,33 +171,20 @@ $.fn.hidePoiToggle = function (a) {
 };
 
 /* Extern modules */
-var HTStorageManager = function () {
-  var data = {};
-  return {
-    
-  }
-}(), HTPoiConfig = function () {
-  var pois = {}
-    , redraw = null
-    , app = null
-    , key = "HT_MAP_DATA";
-
+var HTPoiConfig = function () {
+  var pois = {}, redraw = null, app = null, key = "HT_MAP_DATA";
   function getParamHash() {
     var params = SeedMapTiles.getParams();
     return params.platform.label + '/' + params.seed + '/' + params.dimension
   }
-  function triggerHTPoiChange() {
-    app && app.triggerHandler("applycustomizepoi")
-  }
-  function saveAllHTPois() {
+  function t() { app && app.triggerHandler("applycustomizepoi") }
+  function st() {
     try {
       window.localStorage.setItem(key, JSON.stringify(pois))
     } catch (a) {
       window.gtag && window._enableAnalytics && window.gtag("event", "HT_ChunkApp_UserDataUpdateError")
     }
   }
-
-  // Load all customized pois on init.
   try {
     pois = JSON.parse(window.localStorage.getItem(key)) || {};
   } catch (g) {
@@ -211,42 +197,30 @@ var HTStorageManager = function () {
         , b = a.platform.label + '/' + a.seed + '/' + (dim ? dim : a.dimension)
         , c = Math.floor(pos.x) + '/' + Math.floor(pos.z);
 
-      if (pois[b] && pois[b][c])
-        return !1;
-
+      if (pois[b] && pois[b][c]) return !1;
       pois[b] || (pois[b] = {});
-      pois[b][c] = {
-        name: name,
-        coords: [Math.floor(pos.x), null, Math.floor(pos.z)]
-      };
-      saveAllHTPois();
+      pois[b][c] = { name: name, coords: [Math.floor(pos.x), null, Math.floor(pos.z)] };
+      window.localStorage.setItem(key, JSON.stringify(pois));
       redraw && redraw();
-
       return !0
     },
     modifyPoi: function (hash, name) {
       var a = getParamHash();
-      if (!pois[a] || !pois[a][hash])
-        return !1;
-      Object.assign(pois[a][hash], {
-        name: name
-      });
-      saveAllHTPois();
-      triggerHTPoiChange();
+      if (!pois[a] || !pois[a][hash]) return !1;
+      pois[a][hash] = { name: name };
+      st(); t();
       return !0
     },
     removePoi: function (hash) {
       var a = getParamHash();
       delete pois[a][hash];
-      if (!Object.keys(pois[a]).length)
-        delete pois[a][hash];
-      saveAllHTPois();
+      if (!Object.keys(pois[a]).length) delete pois[a][hash];
+      st();
     },
     getPoisInRegion: function (tile) {
       var a = getParamHash()
         , b = [];
-      if (!pois[a])
-        return b;
+      if (!pois[a]) return b;
       Object.keys(pois[a]).forEach(function (d) {
         var c = d.split('/');
         c[0] = Number(c[0]) / 16, c[1] = Number(c[1]) / 16;
@@ -256,27 +230,11 @@ var HTStorageManager = function () {
       });
       return b
     },
-    getAllPoi: function () {
-      var poiOnParam = pois[getParamHash()];
-      for (var poi in poiOnParam) {
-        // Handling invalid POIs.
-        if (!poiOnParam[poi].coords)
-          poiOnParam[poi].coords = { x: 0, z: 0 };
-        if (!poiOnParam[poi].name)
-          poiOnParam[poi].name = Math.floor(Math.random() * 0xFFFFFFFF).toString(16);
-      }
-      return poiOnParam
-    },
-    getToolTipText: function (a) {
-      return a[2].data.name
-    },
-    getHoverText: function (a) {
-      return a[2].data.name
-    },
-    getCoords: function (a) {
-      return [a[2].chunkPos[0] * 16, null, a[2].chunkPos[1] * 16]
-    },
-    updatePoi: triggerHTPoiChange,
+    getAllPoi: function () { return pois[getParamHash()] },
+    getToolTipText: function (a) { return a[2].data.name },
+    getHoverText: function (a) { return a[2].data.name },
+    getCoords: function (a) { return [a[2].chunkPos[0] * 16, null, a[2].chunkPos[1] * 16] },
+    updatePoi: t,
     onInit: function (e) {
       app = e;
       redraw = function () { e.triggerHandler("redrawmap") };
@@ -307,18 +265,5 @@ var HTStorageManager = function () {
     getNumberSelectedPois: function () { return f },
     getAllSelectedPois: function () { return selectData },
     clearSelection: function () { selectData = {} }
-  }
-}(), HTVectorGraph = function () {
-  var key = "HT_MAP_GRAPHS";
-
-  // Load all graphs on init.
-  try {
-    pois = JSON.parse(window.localStorage.getItem(key)) || {};
-  } catch (g) {
-    window.gtag && window._enableAnalytics && window.gtag("event", "HT_ChunkApp_UserDataLoadError")
-  }
-
-  return {
-
   }
 }();
