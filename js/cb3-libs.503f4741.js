@@ -162,6 +162,7 @@
         a.DesertWell = "desertWell";
         a.TrailRuin = "trailRuin";
         a.TrialChamber = "trialChamber";
+        a.AbandonedCamp = "abandonedCamp";
         a.LavaPool = "lavaPool";
         a.HTCustomize = "htCustomize";
       }(poiTypes || (poiTypes = {}));
